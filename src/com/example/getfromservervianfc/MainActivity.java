@@ -35,6 +35,7 @@ import android.os.Message;
 import android.os.Parcelable;
 import android.os.StrictMode;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
@@ -68,7 +69,7 @@ public class MainActivity extends Activity {
 	private Button answ4;
 	private ImageView im;
 	
-	EditText StringToWrite;
+	private static EditText StringToWrite;
 	IntentFilter[] mWriteTagFilters;
 	NfcAdapter mNfcAdapter;
 	private PendingIntent mNfcPendingIntent;
@@ -89,6 +90,11 @@ public class MainActivity extends Activity {
 		answ4 = (Button ) findViewById(R.id.button4);
 		im = (ImageView) findViewById(R.id.imageView1);
 		
+		answ1.setVisibility(View.INVISIBLE);
+		answ2.setVisibility(View.INVISIBLE);
+		answ3.setVisibility(View.INVISIBLE);
+		answ4.setVisibility(View.INVISIBLE);
+		im.setVisibility(View.INVISIBLE);
 		
 		
 		
@@ -121,7 +127,9 @@ public class MainActivity extends Activity {
 					}
 					
 					try {
+						
 						JSONObject c = new JSONObject(tmp);
+						
 						String date = c.getString("Date");
 						String question = c.getString("Question");
 						JSONObject answers = c.getJSONObject("Answers");
@@ -136,6 +144,12 @@ public class MainActivity extends Activity {
 						answ2.setText(a2);
 						answ3.setText(a3);
 						answ4.setText(a4);
+						
+						answ1.setVisibility(View.VISIBLE);
+						answ2.setVisibility(View.VISIBLE);
+						answ3.setVisibility(View.VISIBLE);
+						answ4.setVisibility(View.VISIBLE);
+						im.setVisibility(View.VISIBLE);
 						
 						
 						// TODO on new thread, remove the strict mode setting
@@ -153,6 +167,12 @@ public class MainActivity extends Activity {
 						//textViewStatus.setText(a3);
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
+						ques.setText("Invalid question ID!");
+						answ1.setVisibility(View.INVISIBLE);
+						answ2.setVisibility(View.INVISIBLE);
+						answ3.setVisibility(View.INVISIBLE);
+						answ4.setVisibility(View.INVISIBLE);
+						im.setVisibility(View.INVISIBLE);
 						e.printStackTrace();
 					} 
 					
@@ -403,7 +423,7 @@ public class MainActivity extends Activity {
 			NdefMessage msg = new NdefMessage(new NdefRecord[] { record1 });
 
 			if (writeTag(msg, detectedTag)) {
-				Toast.makeText(this, "Successful write operation!",
+				Toast.makeText(this, "Successful write operation! "+"qID: "+StringToWrite.getText().toString(),
 						Toast.LENGTH_LONG).show();
 				Log.d("lol",StringToWrite.getText().toString());
 				

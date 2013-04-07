@@ -56,13 +56,10 @@ public class MainActivity extends Activity {
 	// Handler, ami majd módosítani fogja a UI-t
 	Handler handler;
 
-	private void RefreshUI(String s) {
-		textViewStatus.append(s);
-	}
-
 	// NFC-hez kell
 	private Switch enableWrite;
 	private Button enableRead;
+	private static String questionID = "1";
 	
 	private TextView ques;
 	private Button answ1;
@@ -83,7 +80,7 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		textViewStatus = (TextView) findViewById(R.id.textView1);
-		textViewStatus.setText("Oncreate");
+	//	textViewStatus.setText("Oncreate");
 		
 		ques = (TextView) findViewById(R.id.textView2);
 		answ1 = (Button ) findViewById(R.id.button1);
@@ -104,6 +101,25 @@ public class MainActivity extends Activity {
 					// Kiírja a kapott szöveget
 					String tmp=b.getString("text");
 					//textViewStatus.setText(tmp);
+					
+					NdefMessage[] msgs = null;	
+					Parcelable[] rawMsgs = getIntent().getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+					if (rawMsgs != null) {
+						msgs = new NdefMessage[rawMsgs.length];
+						for (int i = 0; i < rawMsgs.length; i++) {
+							msgs[i] = (NdefMessage) rawMsgs[i];
+						}
+					}
+					
+					if (msgs != null) {
+						for (NdefMessage tmpMsg : msgs) {
+							for (NdefRecord tmpRecord : tmpMsg.getRecords()) {
+								textViewStatus.setText(new String(tmpRecord.getPayload()));
+								//questionID=textViewStatus.getText().toString();
+							}
+						}
+					}
+					
 					try {
 						JSONObject c = new JSONObject(tmp);
 						String date = c.getString("Date");
@@ -132,11 +148,15 @@ public class MainActivity extends Activity {
 							  e.printStackTrace();
 							}
 						
-						textViewStatus.setText(a3);
+						
+						
+						//textViewStatus.setText(a3);
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} 
+					
+
 					
 				} else if (msg.what == 100) {
 					textViewStatus.setText("NEM TUD KAPCSOLÓDNI A SZERVERHEZ");
@@ -173,10 +193,10 @@ public class MainActivity extends Activity {
 		@Override
 		protected Long doInBackground(URL... params) {
 			HttpClient httpclient = new DefaultHttpClient();
-			String URL = "http://nfconlab.azurewebsites.net/Home/Questions/1";
+			String URL = "http://nfconlab.azurewebsites.net/Home/Questions/";
 			//Meghívja a kiolvasott String paraméterrel az URL-t
-			//HttpGet httpGet = new HttpGet(URL + read);
-			HttpGet httpGet = new HttpGet(URL);
+			HttpGet httpGet = new HttpGet(URL + questionID);
+			//HttpGet httpGet = new HttpGet(URL);
 			HttpResponse response;
 			HttpEntity entity;
 			InputStream instream;
@@ -239,7 +259,8 @@ public class MainActivity extends Activity {
 						running = true;
 						Log.d("nfcdebug", s);
 						HttpClient httpclient = new DefaultHttpClient();
-						String URL = "http://nfconlab.azurewebsites.net/Home/Questions/1";
+						String URL = "http://nfconlab.azurewebsites.net/Home/Questions/";
+						URL = URL + questionID;
 						//HttpGet httpGet = new HttpGet(URL + s);
 						HttpGet httpGet = new HttpGet(URL);
 						HttpResponse response;
@@ -326,7 +347,7 @@ public class MainActivity extends Activity {
 	@Override
 	public void onResume() {
 		super.onResume();
-		textViewStatus.setText("OnResume");
+		//textViewStatus.setText("OnResume");
 		Intent intent = getIntent();
 		if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction())) {
 			Parcelable[] rawMsgs = intent
@@ -339,9 +360,11 @@ public class MainActivity extends Activity {
 				String message;
 				for (NdefMessage tmpMsg : msgs) {
 					for (NdefRecord tmpRecord : tmpMsg.getRecords()) {
-						// tv.append("\n" + new String(tmpRecord.getPayload()));
+						//tv.append("\n" + new String(tmpRecord.getPayload()));
+						new String(tmpRecord.getPayload());
 						message = new String(tmpRecord.getPayload());
 						String tmp = message.substring(1);
+						System.out.println(tmp);
 						readFromServer(tmp);
 						//AsyncTask<URL, Integer, Long> rfsa = new readFromServerAsync().execute();
 					}
@@ -349,7 +372,24 @@ public class MainActivity extends Activity {
 			}
 
 		}
-
+		
+		NdefMessage[] msgs = null;	
+		Parcelable[] rawMsgs = getIntent().getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+		if (rawMsgs != null) {
+			msgs = new NdefMessage[rawMsgs.length];
+			for (int i = 0; i < rawMsgs.length; i++) {
+				msgs[i] = (NdefMessage) rawMsgs[i];
+			}
+		}
+		
+		if (msgs != null) {
+			for (NdefMessage tmpMsg : msgs) {
+				for (NdefRecord tmpRecord : tmpMsg.getRecords()) {
+					textViewStatus.append("\n"+new String(tmpRecord.getPayload()));
+					//questionID=textViewStatus.getText().toString();
+				}
+			}
+		}
 	}
 
 	@Override
@@ -363,8 +403,11 @@ public class MainActivity extends Activity {
 			NdefMessage msg = new NdefMessage(new NdefRecord[] { record1 });
 
 			if (writeTag(msg, detectedTag)) {
-				Toast.makeText(this, "Success write operation!",
+				Toast.makeText(this, "Successful write operation!",
 						Toast.LENGTH_LONG).show();
+				Log.d("lol",StringToWrite.getText().toString());
+				
+				questionID=StringToWrite.getText().toString();
 			} else {
 				Toast.makeText(this, "Failed to write!", Toast.LENGTH_LONG)
 						.show();

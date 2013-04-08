@@ -6,13 +6,23 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HTTP;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,6 +46,7 @@ import android.os.Parcelable;
 import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
@@ -205,6 +216,38 @@ public class MainActivity extends Activity {
 		mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 		mNfcPendingIntent = PendingIntent.getActivity(this, 0, new Intent(this,
 				getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+		
+		answ2.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+
+				 HttpClient httpclient = new DefaultHttpClient();
+				 
+				 try {
+				 HttpPost httppost = new HttpPost("http://nfconlab.azurewebsites.net/Home/Questions");
+				    
+				 JSONObject json = new JSONObject();
+				 json.put("Answer", "2");
+				 
+				 StringEntity se = new StringEntity(json.toString());
+				 se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+				 httppost.setEntity(se);
+				 HttpResponse response = httpclient.execute(httppost);
+				 String s = EntityUtils.toString(response.getEntity());
+				 Log.d("httpresponse", s);
+					} catch (ClientProtocolException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}				
+			        
+			}
+				
+
+		});
 
 	}
 

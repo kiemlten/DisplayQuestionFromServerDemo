@@ -80,6 +80,8 @@ public class MainActivity extends Activity {
 	private Button answ4;
 	private ImageView im;
 	
+	 HttpClient httpclient = new DefaultHttpClient();
+	
 	private static EditText StringToWrite;
 	IntentFilter[] mWriteTagFilters;
 	NfcAdapter mNfcAdapter;
@@ -222,13 +224,13 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View arg0) {
 
-				 HttpClient httpclient = new DefaultHttpClient();
+				
 				 
 				 try {
 				 HttpPost httppost = new HttpPost("http://nfconlab.azurewebsites.net/Home/Questions");
 				    
 				 JSONObject json = new JSONObject();
-				 json.put("Answer", "2");
+				 json.put("Answer", "Ott");
 				 
 				 StringEntity se = new StringEntity(json.toString());
 				 se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));

@@ -9,6 +9,7 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Random;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -71,16 +72,16 @@ public class MainActivity extends Activity {
 	private Button enableRead;
 	private static String questionID = "1";
 	private static boolean identified = false;
-	
+
 	private TextView ques;
 	private Button answ1;
 	private Button answ2;
 	private Button answ3;
 	private Button answ4;
 	private ImageView im;
-	
+
 	private static HttpClient httpclient = new DefaultHttpClient();
-	
+
 	private static EditText StringToWrite;
 	IntentFilter[] mWriteTagFilters;
 	NfcAdapter mNfcAdapter;
@@ -93,8 +94,8 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		textViewStatus = (TextView) findViewById(R.id.textView1);
-	//	textViewStatus.setText("Oncreate");
-		
+		//	textViewStatus.setText("Oncreate");
+
 		ques = (TextView) findViewById(R.id.textView2);
 		answ1 = (Button ) findViewById(R.id.button1);
 		answ2 = (Button ) findViewById(R.id.button2);
@@ -102,10 +103,12 @@ public class MainActivity extends Activity {
 		answ4 = (Button ) findViewById(R.id.button4);
 		im = (ImageView) findViewById(R.id.imageView1);
 		
-		sendIdentifyToServer();
-		
+		while ( !identified) {
+			sendIdentifyToServer();
+		}
+
 		setQuestionFormVisibility(View.INVISIBLE);
-		
+
 		// Handler, ami majd módosítani fogja a UI-t
 		handler = new Handler() {
 			@Override
@@ -115,7 +118,7 @@ public class MainActivity extends Activity {
 					// Kiírja a kapott szöveget
 					String tmp=b.getString("text");
 					//textViewStatus.setText(tmp);
-					
+
 					NdefMessage[] msgs = null;	
 					Parcelable[] rawMsgs = getIntent().getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
 					if (rawMsgs != null) {
@@ -124,7 +127,7 @@ public class MainActivity extends Activity {
 							msgs[i] = (NdefMessage) rawMsgs[i];
 						}
 					}
-					
+
 					if (msgs != null) {
 						for (NdefMessage tmpMsg : msgs) {
 							for (NdefRecord tmpRecord : tmpMsg.getRecords()) {
@@ -133,12 +136,12 @@ public class MainActivity extends Activity {
 							}
 						}
 					}
-					
-					
+
+
 					try {
-						
+
 						JSONObject c = new JSONObject(tmp);
-						
+
 						String date = c.getString("Date");
 						String question = c.getString("Question");
 						JSONObject answers = c.getJSONObject("Answers");
@@ -147,36 +150,36 @@ public class MainActivity extends Activity {
 						String a3 = answers.getString("Answer3");
 						String a4 = answers.getString("Answer4");
 						String imageURL = c.getString("Image");
-						
+
 						ques.setText(question);
 						answ1.setText(a1);
 						answ2.setText(a2);
 						answ3.setText(a3);
 						answ4.setText(a4);
-						
+
 						setQuestionFormVisibility(View.VISIBLE);
-						
+
 						// TODO on new thread, remove the strict mode setting
 						try {
-							  Bitmap bitmap = BitmapFactory.decodeStream((InputStream)new URL(imageURL).getContent());
-							  im.setImageBitmap(bitmap); 
-							} catch (MalformedURLException e) {
-							  e.printStackTrace();
-							} catch (IOException e) {
-							  e.printStackTrace();
-							}
-						
-						
-						
+							Bitmap bitmap = BitmapFactory.decodeStream((InputStream)new URL(imageURL).getContent());
+							im.setImageBitmap(bitmap); 
+						} catch (MalformedURLException e) {
+							e.printStackTrace();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+
+
+
 						//textViewStatus.setText(a3);
 					} catch (JSONException e) {
 						ques.setText("Invalid question ID!");
 						setQuestionFormVisibility(View.INVISIBLE);
 						e.printStackTrace();
 					} 
-					
 
-					
+
+
 				} else if (msg.what == 100) {
 					textViewStatus.setText("NEM TUD KAPCSOLÓDNI A SZERVERHEZ");
 				}
@@ -186,7 +189,7 @@ public class MainActivity extends Activity {
 
 		// NFC rész
 
-		
+
 
 		enableWrite = (Switch) findViewById(R.id.switch1);
 		StringToWrite = (EditText) findViewById(R.id.editText1);
@@ -204,7 +207,7 @@ public class MainActivity extends Activity {
 		mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 		mNfcPendingIntent = PendingIntent.getActivity(this, 0, new Intent(this,
 				getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
-		
+
 		answ1.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -212,7 +215,7 @@ public class MainActivity extends Activity {
 				answerQuestionToServer(answ1.getText());
 			}
 		});
-		
+
 		answ2.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -220,7 +223,7 @@ public class MainActivity extends Activity {
 				answerQuestionToServer(answ2.getText());
 			}
 		});
-		
+
 		answ3.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -228,7 +231,7 @@ public class MainActivity extends Activity {
 				answerQuestionToServer(answ3.getText());
 			}
 		});
-		
+
 		answ4.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -238,7 +241,7 @@ public class MainActivity extends Activity {
 		});
 
 	}
-	
+
 	public void setQuestionFormVisibility(int visibility) {
 		answ1.setVisibility(visibility);
 		answ2.setVisibility(visibility);
@@ -246,72 +249,78 @@ public class MainActivity extends Activity {
 		answ4.setVisibility(visibility);
 		im.setVisibility(visibility);
 	}
-	
+
 	public void sendIdentifyToServer()  {
 		// ID
-				if (!identified) {
-					try {
-						 HttpPost httppost = new HttpPost("http://nfconlab.azurewebsites.net/Home/Identify");
-						    
-						 // TODO random userid
-						 JSONObject json = new JSONObject();
-						 json.put("UserID", "1");
-						 
-						 Date d = new Date();
-						 json.put("Date", d);
-						 
-						 StringEntity se = new StringEntity(json.toString());
-						 se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-						 httppost.setEntity(se);
-						 HttpResponse response = httpclient.execute(httppost);
-						 String s = EntityUtils.toString(response.getEntity());
-						 // TODO check if successful, while!
-						 identified = true;
-						 Log.d("identify", s);
-						 Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
-							} catch (ClientProtocolException e) {
-								e.printStackTrace();
-							} catch (IOException e) {
-								e.printStackTrace();
-								Toast.makeText(getApplicationContext(), "IOException", Toast.LENGTH_LONG).show();
-							} catch (JSONException e) {
-								e.printStackTrace();
-							} 
+		if (!identified) {
+			try {
+				HttpPost httppost = new HttpPost("http://nfconlab.azurewebsites.net/Home/Identify");
+
+				// generates random int between 1 and 1000
+				Random random = new Random();
+				int userid = random.nextInt(1000-1+1)+1;
+
+				JSONObject json = new JSONObject();
+				json.put("UserID", userid);
+
+				Date d = new Date();
+				json.put("Date", d);
+
+				StringEntity se = new StringEntity(json.toString());
+				se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+				httppost.setEntity(se);
+				HttpResponse response = httpclient.execute(httppost);
+				String s = EntityUtils.toString(response.getEntity());
+				//Log.d("identify", s);
+				if (s.equals("User identification complete")) {
+					identified = true;
+					Toast.makeText(getApplicationContext(), "Sikeres felhasználói azonosítás", Toast.LENGTH_LONG).show();
+				} else {
+					Toast.makeText(getApplicationContext(), "Sikertelen felhasználói azonosítás", Toast.LENGTH_LONG).show();
 				}
+			} catch (ClientProtocolException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+				Toast.makeText(getApplicationContext(), "IOException", Toast.LENGTH_LONG).show();
+			} catch (JSONException e) {
+				e.printStackTrace();
+			} 
+		}
 	}
-	
+
 	public void answerQuestionToServer(CharSequence text) {
 		try {
-			 HttpPost httppost = new HttpPost("http://nfconlab.azurewebsites.net/Home/Questions");
-			    
-			 JSONObject json = new JSONObject();
-			 json.put("Answer", text);
-			 
-			 StringEntity se = new StringEntity(json.toString());
-			 se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-			 httppost.setEntity(se);
-			 HttpResponse response = httpclient.execute(httppost);
-			 String s = EntityUtils.toString(response.getEntity());
+			HttpPost httppost = new HttpPost("http://nfconlab.azurewebsites.net/Home/Questions");
+
+			JSONObject json = new JSONObject();
+			json.put("Answer", text);
+
+			StringEntity se = new StringEntity(json.toString());
+			se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+			httppost.setEntity(se);
+			HttpResponse response = httpclient.execute(httppost);
+			String s = EntityUtils.toString(response.getEntity());
 			// Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
-			 Log.d("httpresponse", "response: "+s);
-			 handleQuestionResponseFromServer(s);
-				} catch (ClientProtocolException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}				
-		
+			Log.d("httpresponse", "response: "+s);
+			handleQuestionResponseFromServer(s);
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}				
+
 	}
-	
+
 	public void handleQuestionResponseFromServer(String response) {
 		JSONObject res;
 		try {
 			res = new JSONObject(response);
 			String responseValid = res.getString("Response");
 			String question = res.getString("Position");
-			
+
 			if (responseValid.equals("true")) {
 				Toast.makeText(getApplicationContext(), "A válaszod helyes, a következõ pont poziciója: "+question, Toast.LENGTH_LONG).show();
 			} else {
@@ -320,8 +329,8 @@ public class MainActivity extends Activity {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		
-		
+
+
 	}
 
 	class readFromServerAsync extends AsyncTask<URL, Integer, Long>{
@@ -341,7 +350,7 @@ public class MainActivity extends Activity {
 				entity = response.getEntity();
 				instream = entity.getContent();
 				processResponseAsync(instream, read);
-				
+
 			} catch (ClientProtocolException e) {
 				// Hiba van, küld egy üzenetet, ami a UI-ra kiírja,
 				// hogy hiba
@@ -353,7 +362,7 @@ public class MainActivity extends Activity {
 			}
 			return null;
 		}
-		
+
 	}
 	// Választ feldolgozó függvény
 	private void processResponseAsync(final InputStream aIS, final String s) {
@@ -369,7 +378,7 @@ public class MainActivity extends Activity {
 			}
 			// Beállítja az üzenetet a handler számára
 			tmp=sb.toString();
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -384,7 +393,7 @@ public class MainActivity extends Activity {
 		}
 
 	}
-	
+
 	// Olvasás a szervertõl
 	private void readFromServer(final String s) {
 		// Külön szálban, hogy ne blokkolódjon
@@ -508,7 +517,7 @@ public class MainActivity extends Activity {
 			}
 
 		}
-		
+
 		NdefMessage[] msgs = null;	
 		Parcelable[] rawMsgs = getIntent().getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
 		if (rawMsgs != null) {
@@ -517,7 +526,7 @@ public class MainActivity extends Activity {
 				msgs[i] = (NdefMessage) rawMsgs[i];
 			}
 		}
-		
+
 		if (msgs != null) {
 			for (NdefMessage tmpMsg : msgs) {
 				for (NdefRecord tmpRecord : tmpMsg.getRecords()) {
@@ -542,11 +551,11 @@ public class MainActivity extends Activity {
 				Toast.makeText(this, "Successful write operation! "+"qID: "+StringToWrite.getText().toString(),
 						Toast.LENGTH_LONG).show();
 				Log.d("lol",StringToWrite.getText().toString());
-				
+
 				questionID=StringToWrite.getText().toString();
 			} else {
 				Toast.makeText(this, "Failed to write!", Toast.LENGTH_LONG)
-						.show();
+				.show();
 			}
 		}
 	}

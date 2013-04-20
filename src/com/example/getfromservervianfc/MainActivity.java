@@ -6,21 +6,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
@@ -80,7 +78,7 @@ public class MainActivity extends Activity {
 	private Button answ4;
 	private ImageView im;
 	
-	 HttpClient httpclient = new DefaultHttpClient();
+	private static HttpClient httpclient = new DefaultHttpClient();
 	
 	private static EditText StringToWrite;
 	IntentFilter[] mWriteTagFilters;
@@ -103,13 +101,13 @@ public class MainActivity extends Activity {
 		answ4 = (Button ) findViewById(R.id.button4);
 		im = (ImageView) findViewById(R.id.imageView1);
 		
+		
+		
 		answ1.setVisibility(View.INVISIBLE);
 		answ2.setVisibility(View.INVISIBLE);
 		answ3.setVisibility(View.INVISIBLE);
 		answ4.setVisibility(View.INVISIBLE);
 		im.setVisibility(View.INVISIBLE);
-		
-		
 		
 		// Handler, ami majd módosítani fogja a UI-t
 		handler = new Handler() {
@@ -139,6 +137,7 @@ public class MainActivity extends Activity {
 						}
 					}
 					
+					
 					try {
 						
 						JSONObject c = new JSONObject(tmp);
@@ -152,6 +151,7 @@ public class MainActivity extends Activity {
 						String a4 = answers.getString("Answer4");
 						String imageURL = c.getString("Image");
 						
+						Toast.makeText(getApplicationContext(), date, Toast.LENGTH_LONG).show();
 						ques.setText(question);
 						answ1.setText(a1);
 						answ2.setText(a2);
@@ -230,14 +230,16 @@ public class MainActivity extends Activity {
 				 HttpPost httppost = new HttpPost("http://nfconlab.azurewebsites.net/Home/Questions");
 				    
 				 JSONObject json = new JSONObject();
-				 json.put("Answer", "Ott");
+				 json.put("Answer", "365");
 				 
 				 StringEntity se = new StringEntity(json.toString());
 				 se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
 				 httppost.setEntity(se);
 				 HttpResponse response = httpclient.execute(httppost);
 				 String s = EntityUtils.toString(response.getEntity());
-				 Log.d("httpresponse", s);
+				 Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
+				 Log.d("httpresponse", "httpclient: "+httpclient.toString());
+				 Log.d("httpresponse", "response: "+s);
 					} catch (ClientProtocolException e) {
 						e.printStackTrace();
 					} catch (IOException e) {
@@ -257,7 +259,7 @@ public class MainActivity extends Activity {
 
 		@Override
 		protected Long doInBackground(URL... params) {
-			HttpClient httpclient = new DefaultHttpClient();
+			//HttpClient httpclient = new DefaultHttpClient();
 			String URL = "http://nfconlab.azurewebsites.net/Home/Questions/";
 			//Meghívja a kiolvasott String paraméterrel az URL-t
 			HttpGet httpGet = new HttpGet(URL + questionID);
@@ -323,11 +325,11 @@ public class MainActivity extends Activity {
 					if (!running) {
 						running = true;
 						Log.d("nfcdebug", s);
-						HttpClient httpclient = new DefaultHttpClient();
+						//HttpClient httpclient = new DefaultHttpClient();
 						String URL = "http://nfconlab.azurewebsites.net/Home/Questions/";
-						URL = URL + questionID;
-						//HttpGet httpGet = new HttpGet(URL + s);
-						HttpGet httpGet = new HttpGet(URL);
+						//URL = URL + questionID;
+						HttpGet httpGet = new HttpGet(URL + s);
+						//HttpGet httpGet = new HttpGet(URL);
 						HttpResponse response;
 						HttpEntity entity;
 						InputStream instream;

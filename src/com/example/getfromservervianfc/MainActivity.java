@@ -70,6 +70,7 @@ public class MainActivity extends Activity {
 	private Switch enableWrite;
 	private Button enableRead;
 	private static String questionID = "1";
+	private static boolean identified = false;
 	
 	private TextView ques;
 	private Button answ1;
@@ -101,13 +102,9 @@ public class MainActivity extends Activity {
 		answ4 = (Button ) findViewById(R.id.button4);
 		im = (ImageView) findViewById(R.id.imageView1);
 		
+		sendIdentifyToServer();
 		
-		
-		answ1.setVisibility(View.INVISIBLE);
-		answ2.setVisibility(View.INVISIBLE);
-		answ3.setVisibility(View.INVISIBLE);
-		answ4.setVisibility(View.INVISIBLE);
-		im.setVisibility(View.INVISIBLE);
+		setQuestionFormVisibility(View.INVISIBLE);
 		
 		// Handler, ami majd módosítani fogja a UI-t
 		handler = new Handler() {
@@ -151,19 +148,13 @@ public class MainActivity extends Activity {
 						String a4 = answers.getString("Answer4");
 						String imageURL = c.getString("Image");
 						
-						Toast.makeText(getApplicationContext(), date, Toast.LENGTH_LONG).show();
 						ques.setText(question);
 						answ1.setText(a1);
 						answ2.setText(a2);
 						answ3.setText(a3);
 						answ4.setText(a4);
 						
-						answ1.setVisibility(View.VISIBLE);
-						answ2.setVisibility(View.VISIBLE);
-						answ3.setVisibility(View.VISIBLE);
-						answ4.setVisibility(View.VISIBLE);
-						im.setVisibility(View.VISIBLE);
-						
+						setQuestionFormVisibility(View.VISIBLE);
 						
 						// TODO on new thread, remove the strict mode setting
 						try {
@@ -179,13 +170,8 @@ public class MainActivity extends Activity {
 						
 						//textViewStatus.setText(a3);
 					} catch (JSONException e) {
-						// TODO Auto-generated catch block
 						ques.setText("Invalid question ID!");
-						answ1.setVisibility(View.INVISIBLE);
-						answ2.setVisibility(View.INVISIBLE);
-						answ3.setVisibility(View.INVISIBLE);
-						answ4.setVisibility(View.INVISIBLE);
-						im.setVisibility(View.INVISIBLE);
+						setQuestionFormVisibility(View.INVISIBLE);
 						e.printStackTrace();
 					} 
 					
@@ -219,40 +205,123 @@ public class MainActivity extends Activity {
 		mNfcPendingIntent = PendingIntent.getActivity(this, 0, new Intent(this,
 				getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
 		
+		answ1.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				answerQuestionToServer(answ1.getText());
+			}
+		});
+		
 		answ2.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View arg0) {
-
-				
-				 
-				 try {
-				 HttpPost httppost = new HttpPost("http://nfconlab.azurewebsites.net/Home/Questions");
-				    
-				 JSONObject json = new JSONObject();
-				 json.put("Answer", "365");
-				 
-				 StringEntity se = new StringEntity(json.toString());
-				 se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-				 httppost.setEntity(se);
-				 HttpResponse response = httpclient.execute(httppost);
-				 String s = EntityUtils.toString(response.getEntity());
-				 Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
-				 Log.d("httpresponse", "httpclient: "+httpclient.toString());
-				 Log.d("httpresponse", "response: "+s);
-					} catch (ClientProtocolException e) {
-						e.printStackTrace();
-					} catch (IOException e) {
-						e.printStackTrace();
-					} catch (JSONException e) {
-						e.printStackTrace();
-					}				
-			        
+				answerQuestionToServer(answ2.getText());
 			}
-				
+		});
+		
+		answ3.setOnClickListener(new OnClickListener() {
 
+			@Override
+			public void onClick(View arg0) {
+				answerQuestionToServer(answ3.getText());
+			}
+		});
+		
+		answ4.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				answerQuestionToServer(answ4.getText());
+			}
 		});
 
+	}
+	
+	public void setQuestionFormVisibility(int visibility) {
+		answ1.setVisibility(visibility);
+		answ2.setVisibility(visibility);
+		answ3.setVisibility(visibility);
+		answ4.setVisibility(visibility);
+		im.setVisibility(visibility);
+	}
+	
+	public void sendIdentifyToServer()  {
+		// ID
+				if (!identified) {
+					try {
+						 HttpPost httppost = new HttpPost("http://nfconlab.azurewebsites.net/Home/Identify");
+						    
+						 // TODO random userid
+						 JSONObject json = new JSONObject();
+						 json.put("UserID", "1");
+						 
+						 Date d = new Date();
+						 json.put("Date", d);
+						 
+						 StringEntity se = new StringEntity(json.toString());
+						 se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+						 httppost.setEntity(se);
+						 HttpResponse response = httpclient.execute(httppost);
+						 String s = EntityUtils.toString(response.getEntity());
+						 // TODO check if successful, while!
+						 identified = true;
+						 Log.d("identify", s);
+						 Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
+							} catch (ClientProtocolException e) {
+								e.printStackTrace();
+							} catch (IOException e) {
+								e.printStackTrace();
+								Toast.makeText(getApplicationContext(), "IOException", Toast.LENGTH_LONG).show();
+							} catch (JSONException e) {
+								e.printStackTrace();
+							} 
+				}
+	}
+	
+	public void answerQuestionToServer(CharSequence text) {
+		try {
+			 HttpPost httppost = new HttpPost("http://nfconlab.azurewebsites.net/Home/Questions");
+			    
+			 JSONObject json = new JSONObject();
+			 json.put("Answer", text);
+			 
+			 StringEntity se = new StringEntity(json.toString());
+			 se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+			 httppost.setEntity(se);
+			 HttpResponse response = httpclient.execute(httppost);
+			 String s = EntityUtils.toString(response.getEntity());
+			// Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
+			 Log.d("httpresponse", "response: "+s);
+			 handleQuestionResponseFromServer(s);
+				} catch (ClientProtocolException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}				
+		
+	}
+	
+	public void handleQuestionResponseFromServer(String response) {
+		JSONObject res;
+		try {
+			res = new JSONObject(response);
+			String responseValid = res.getString("Response");
+			String question = res.getString("Position");
+			
+			if (responseValid.equals("true")) {
+				Toast.makeText(getApplicationContext(), "A válaszod helyes, a következõ pont poziciója: "+question, Toast.LENGTH_LONG).show();
+			} else {
+				Toast.makeText(getApplicationContext(), "A válaszod rossz!", Toast.LENGTH_SHORT).show();
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+		
 	}
 
 	class readFromServerAsync extends AsyncTask<URL, Integer, Long>{

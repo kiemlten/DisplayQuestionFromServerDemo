@@ -76,7 +76,7 @@ public class MainActivity extends Activity {
 	// NFC-hez kell
 	private Switch enableWrite;
 	private Button enableRead;
-	private static String questionID = "1";
+	private static String questionID = "2";
 	private static boolean identified = false;
 
 	private TextView ques;
@@ -118,7 +118,7 @@ public class MainActivity extends Activity {
 	            @Override
 	            public void onCompleted(GraphUser user, Response response) {
 	              if (user != null) {
-	                ques.setText("Hello " + user.getName() + "!");
+	                textViewStatus.setText("Hello " + user.getName() + "!");
 	              }
 	            }
 	          });
@@ -137,11 +137,11 @@ public class MainActivity extends Activity {
 		answ4 = (Button ) findViewById(R.id.button4);
 		im = (ImageView) findViewById(R.id.imageView1);
 		
-		// TODO remove comments below
-		//while ( !identified) {
+		
+		while ( !identified) {
 			sendIdentifyToServer();
-		//}
-
+		}
+		
 		setQuestionFormVisibility(View.INVISIBLE);
 
 		// Handler, ami majd módosítani fogja a UI-t
@@ -300,9 +300,9 @@ public class MainActivity extends Activity {
 				// generates random int between 1 and 1000
 				Random random = new Random();
 				int userid = random.nextInt(1000-1+1)+1;
-				// TODO use userid
+				
 				JSONObject json = new JSONObject();
-				json.put("UserID", 111);
+				json.put("UserID", userid);
 
 				Date d = new Date();
 				json.put("Date", d);
@@ -312,10 +312,13 @@ public class MainActivity extends Activity {
 				httppost.setEntity(se);
 				HttpResponse response = httpclient.execute(httppost);
 				String s = EntityUtils.toString(response.getEntity());
-				//Log.d("identify", s);
+				Log.d("identify", s);
 				if (s.equals("User identification complete")) {
 					identified = true;
-					Toast.makeText(getApplicationContext(), "Sikeres felhasználói azonosítás", Toast.LENGTH_LONG).show();
+					Toast.makeText(getApplicationContext(), "Sikeres felhasználói azonosítás, id: "+userid, Toast.LENGTH_LONG).show();
+				} else if (s.equals("New user added")) {
+					identified = true;
+					Toast.makeText(getApplicationContext(), "Új felhasználó létrehozva, id: "+userid, Toast.LENGTH_LONG).show();
 				} else {
 					Toast.makeText(getApplicationContext(), "Sikertelen felhasználói azonosítás", Toast.LENGTH_LONG).show();
 				}

@@ -25,6 +25,12 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.facebook.Request;
+import com.facebook.Response;
+import com.facebook.Session;
+import com.facebook.SessionState;
+import com.facebook.model.GraphUser;
+
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -88,24 +94,53 @@ public class MainActivity extends Activity {
 	private PendingIntent mNfcPendingIntent;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		
+	
 		// remove these 2 lines if the image download doesnt run on the main thread
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 		StrictMode.setThreadPolicy(policy);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		textViewStatus = (TextView) findViewById(R.id.textView1);
+		ques = (TextView) findViewById(R.id.textView2);
+		// start Facebook Login
+	    Session.openActiveSession(this, true, new Session.StatusCallback() {
+
+	      // callback when session changes state
+	      @Override
+	      public void call(Session session, SessionState state, Exception exception) {
+	        if (session.isOpened()) {
+
+	          // make request to the /me API
+	          Request.executeMeRequestAsync(session, new Request.GraphUserCallback() {
+
+	            // callback after Graph API response with user object
+	            @Override
+	            public void onCompleted(GraphUser user, Response response) {
+	              if (user != null) {
+	                ques.setText("Hello " + user.getName() + "!");
+	              }
+	            }
+	          });
+	        }
+	      }
+	    });
+  	  
+		
+		
 		//	textViewStatus.setText("Oncreate");
 
-		ques = (TextView) findViewById(R.id.textView2);
+		
 		answ1 = (Button ) findViewById(R.id.button1);
 		answ2 = (Button ) findViewById(R.id.button2);
 		answ3 = (Button ) findViewById(R.id.button3);
 		answ4 = (Button ) findViewById(R.id.button4);
 		im = (ImageView) findViewById(R.id.imageView1);
 		
-		while ( !identified) {
+		// TODO remove comments below
+		//while ( !identified) {
 			sendIdentifyToServer();
-		}
+		//}
 
 		setQuestionFormVisibility(View.INVISIBLE);
 
@@ -131,7 +166,7 @@ public class MainActivity extends Activity {
 					if (msgs != null) {
 						for (NdefMessage tmpMsg : msgs) {
 							for (NdefRecord tmpRecord : tmpMsg.getRecords()) {
-								textViewStatus.setText(new String(tmpRecord.getPayload()));
+								////textViewStatus.setText(new String(tmpRecord.getPayload()));
 								//questionID=textViewStatus.getText().toString();
 							}
 						}
@@ -181,7 +216,7 @@ public class MainActivity extends Activity {
 
 
 				} else if (msg.what == 100) {
-					textViewStatus.setText("NEM TUD KAPCSOLÓDNI A SZERVERHEZ");
+					////textViewStatus.setText("NEM TUD KAPCSOLÓDNI A SZERVERHEZ");
 				}
 				super.handleMessage(msg);
 			}
@@ -241,6 +276,12 @@ public class MainActivity extends Activity {
 		});
 
 	}
+	
+	 @Override
+	  public void onActivityResult(int requestCode, int resultCode, Intent data) {
+	      super.onActivityResult(requestCode, resultCode, data);
+	      Session.getActiveSession().onActivityResult(this, requestCode, resultCode, data);
+	  }
 
 	public void setQuestionFormVisibility(int visibility) {
 		answ1.setVisibility(visibility);
@@ -255,13 +296,13 @@ public class MainActivity extends Activity {
 		if (!identified) {
 			try {
 				HttpPost httppost = new HttpPost("http://nfconlab.azurewebsites.net/Home/Identify");
-
+					
 				// generates random int between 1 and 1000
 				Random random = new Random();
 				int userid = random.nextInt(1000-1+1)+1;
-
+				// TODO use userid
 				JSONObject json = new JSONObject();
-				json.put("UserID", userid);
+				json.put("UserID", 111);
 
 				Date d = new Date();
 				json.put("Date", d);
@@ -389,7 +430,7 @@ public class MainActivity extends Activity {
 					e.printStackTrace();
 				}
 			}
-			textViewStatus.setText(tmp);
+			////textViewStatus.setText(tmp);
 		}
 
 	}
@@ -530,7 +571,7 @@ public class MainActivity extends Activity {
 		if (msgs != null) {
 			for (NdefMessage tmpMsg : msgs) {
 				for (NdefRecord tmpRecord : tmpMsg.getRecords()) {
-					textViewStatus.append("\n"+new String(tmpRecord.getPayload()));
+					////textViewStatus.append("\n"+new String(tmpRecord.getPayload()));
 					//questionID=textViewStatus.getText().toString();
 				}
 			}

@@ -6,9 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.Random;
 
 import org.apache.http.HttpEntity;
@@ -25,13 +23,6 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.facebook.Request;
-import com.facebook.Response;
-import com.facebook.Session;
-import com.facebook.SessionState;
-import com.facebook.model.GraphUser;
-
-import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -49,6 +40,9 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
 import android.os.StrictMode;
+import android.support.v4.app.Fragment;
+import com.google.android.gms.maps.SupportMapFragment;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -61,7 +55,13 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity {
+import com.facebook.Request;
+import com.facebook.Response;
+import com.facebook.Session;
+import com.facebook.SessionState;
+import com.facebook.model.GraphUser;
+
+public class MainActivity extends FragmentActivity {
 
 	TextView textViewStatus;
 	// A változó amibe az ID-t olvassuk
@@ -118,7 +118,7 @@ public class MainActivity extends Activity {
 	            @Override
 	            public void onCompleted(GraphUser user, Response response) {
 	              if (user != null) {
-	                textViewStatus.setText("Hello " + user.getName() + "!");
+	                textViewStatus.setText("Hello " + user.getId() + "!");
 	              }
 	            }
 	          });

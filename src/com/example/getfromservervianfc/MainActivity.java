@@ -6,7 +6,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Random;
 
 import org.apache.http.HttpEntity;
@@ -23,6 +25,13 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.facebook.Request;
+import com.facebook.Response;
+import com.facebook.Session;
+import com.facebook.SessionState;
+import com.facebook.model.GraphUser;
+
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -40,9 +49,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
 import android.os.StrictMode;
-import android.support.v4.app.Fragment;
-import com.google.android.gms.maps.SupportMapFragment;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -55,13 +61,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.facebook.Request;
-import com.facebook.Response;
-import com.facebook.Session;
-import com.facebook.SessionState;
-import com.facebook.model.GraphUser;
-
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends Activity {
 
 	TextView textViewStatus;
 	// A változó amibe az ID-t olvassuk
@@ -86,7 +86,9 @@ public class MainActivity extends FragmentActivity {
 	private Button answ4;
 	private ImageView im;
 
-	private static HttpClient httpclient = new DefaultHttpClient();
+	private static HttpClient httpclient = HttpClientSingleton.getInstance();
+	
+	private long userid;
 
 	private static EditText StringToWrite;
 	IntentFilter[] mWriteTagFilters;
@@ -118,7 +120,11 @@ public class MainActivity extends FragmentActivity {
 	            @Override
 	            public void onCompleted(GraphUser user, Response response) {
 	              if (user != null) {
-	                textViewStatus.setText("Hello " + user.getId() + "!");
+	                textViewStatus.setText("Hello " + user.getFirstName() + "!");
+	                userid= Long.parseLong( user.getId() );
+	                // TODO remove
+	                userid = userid % 1000000;
+	                sendIdentifyToServer(userid);
 	              }
 	            }
 	          });
@@ -136,11 +142,6 @@ public class MainActivity extends FragmentActivity {
 		answ3 = (Button ) findViewById(R.id.button3);
 		answ4 = (Button ) findViewById(R.id.button4);
 		im = (ImageView) findViewById(R.id.imageView1);
-		
-		
-		while ( !identified) {
-			sendIdentifyToServer();
-		}
 		
 		setQuestionFormVisibility(View.INVISIBLE);
 
@@ -291,15 +292,15 @@ public class MainActivity extends FragmentActivity {
 		im.setVisibility(visibility);
 	}
 
-	public void sendIdentifyToServer()  {
+	public void sendIdentifyToServer(long userid)  {
 		// ID
 		if (!identified) {
 			try {
 				HttpPost httppost = new HttpPost("http://nfconlab.azurewebsites.net/Home/Identify");
 					
 				// generates random int between 1 and 1000
-				Random random = new Random();
-				int userid = random.nextInt(1000-1+1)+1;
+				//Random random = new Random();
+				//int userid = random.nextInt(1000-1+1)+1;
 				
 				JSONObject json = new JSONObject();
 				json.put("UserID", userid);

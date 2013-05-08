@@ -6,4 +6,21 @@
     <string name="hello_world">Hello world!</string>
     <string name="app_id">450467215046833</string>
 
+    <!-- Main menu strings -->
+    <string name="question">Aktuális kérdés</string>
+    <string name="exit">Kilépés</string>
+    <string name="map">Térkép</string>
+    <string name="score">Pontszám</string>
+    <string name="toplist">Toplista</string>
+    <string name="title_activity_menu">MainActivity</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_map">MapActivity</string>
+    <string name="title_activity_my_score">MyScoreActivity</string>
+
+    <!-- User score screen strings -->
+    <string name="label_userscore_score">A játékos aktuális pontszáma:</string>
+    <string name="label_userscore_pos">A játékos helyezése a rangsorban:</string>
+    <string name="back">Vissza</string>
+    <string name="title_activity_toplist">ToplistActivity</string>
+
 </resources>

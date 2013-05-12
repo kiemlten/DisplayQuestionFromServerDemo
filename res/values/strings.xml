@@ -18,9 +18,10 @@
     <string name="title_activity_my_score">MyScoreActivity</string>
 
     <!-- User score screen strings -->
-    <string name="label_userscore_score">A játékos aktuális pontszáma:</string>
-    <string name="label_userscore_pos">A játékos helyezése a rangsorban:</string>
+    <string name="label_userscore_score">A játékos aktuális pontszáma:  </string>
+    <string name="label_userscore_pos">A játékos helyezése a rangsorban:  </string>
     <string name="back">Vissza</string>
     <string name="title_activity_toplist">ToplistActivity</string>
+    <string name="title_activity_display_question">DisplayQuestionActivity</string>
 
 </resources>

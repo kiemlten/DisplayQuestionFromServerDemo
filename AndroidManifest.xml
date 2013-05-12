@@ -77,6 +77,10 @@
         <activity
             android:name=".ToplistActivity"
             android:label="@string/title_activity_toplist" >
+        </activity>
+        <activity
+            android:name=".DisplayQuestionActivity"
+            android:label="@string/title_activity_display_question" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

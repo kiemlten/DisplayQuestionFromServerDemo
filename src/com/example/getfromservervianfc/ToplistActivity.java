@@ -12,7 +12,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.ListActivity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -23,18 +25,15 @@ import android.widget.Toast;
 
 public class ToplistActivity extends ListActivity {
 
-	static final String[] FRUITS = new String[] { "Apple", "Avocado", "Banana",
-		"Blueberry", "Coconut", "Durian", "Guava", "Kiwifruit",
-		"Jackfruit", "Mango", "Olive", "Pear", "Sugar-apple" };
-
+	public static final String PREF_FILE_NAME = "PrefFile";
+	SharedPreferences preferences;
+	
 @Override
 public void onCreate(Bundle savedInstanceState) {
+	StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+	StrictMode.setThreadPolicy(policy);
 	super.onCreate(savedInstanceState);
-
-	// no more this
-	// setContentView(R.layout.list_fruit);
-
-	//setListAdapter(new ArrayAdapter<String>(this, R.layout.activity_toplist,FRUITS));
+	preferences = getSharedPreferences(PREF_FILE_NAME, MODE_PRIVATE);
 
 	ListView listView = getListView();
 	listView.setTextFilterEnabled(true);
@@ -47,7 +46,8 @@ public void onCreate(Bundle savedInstanceState) {
 			((TextView) view).getText(), Toast.LENGTH_SHORT).show();
 		}
 	});
-	
+			Long a = preferences.getLong("faceID", 0);
+		    SendIdentityUtil.sendIdentifyToServer(a, this);
 
 			HttpPost httppost = new HttpPost("http://nfconlab.azurewebsites.net/Home/GetTopPlayers");
 			HttpResponse response;

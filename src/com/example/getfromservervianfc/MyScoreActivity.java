@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -29,6 +30,8 @@ public class MyScoreActivity extends Activity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+    	StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+		StrictMode.setThreadPolicy(policy);
         super.onCreate(savedInstanceState);
         preferences = getSharedPreferences(PREF_FILE_NAME, MODE_PRIVATE);
         setContentView(R.layout.activity_my_score);
@@ -47,6 +50,8 @@ public class MyScoreActivity extends Activity {
 		}			
 		});
 		
+		Long a = preferences.getLong("faceID", 0);
+        SendIdentityUtil.sendIdentifyToServer(a, this);
 		Thread t = new Thread() {
 			public void run() {
 				HttpPost httppost = new HttpPost("http://nfconlab.azurewebsites.net/Home/GetMyPoints");
@@ -66,8 +71,8 @@ public class MyScoreActivity extends Activity {
 						runOnUiThread(new Runnable() {
 						     public void run() {
 
-						    	text_score.setText(point);
-								text_pos.setText(pos);
+						    	text_score.setText("  "+point);
+								text_pos.setText("  "+pos);
 
 						    }
 						});

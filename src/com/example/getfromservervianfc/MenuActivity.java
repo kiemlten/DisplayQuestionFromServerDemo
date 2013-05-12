@@ -2,7 +2,9 @@ package com.example.getfromservervianfc;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -18,9 +20,15 @@ public class MenuActivity extends Activity{
 
 	TextView text_welcome;
 	
+	public static final String PREF_FILE_NAME = "PrefFile";
+	SharedPreferences preferences;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+		StrictMode.setThreadPolicy(policy);
 		super.onCreate(savedInstanceState);
+		preferences = getSharedPreferences(PREF_FILE_NAME, MODE_PRIVATE);
 		setContentView(R.layout.activity_menu);
 
 		text_welcome = (TextView) findViewById(R.id.welcomeText);
@@ -30,19 +38,21 @@ public class MenuActivity extends Activity{
 		Button button_toplist = (Button) findViewById(R.id.button_toplist);
 		Button button_exit = (Button) findViewById(R.id.button_exit);
 
-		text_welcome.setText("üdv, USER!");
+		text_welcome.setText("Facebook azonosítás folyamatban...");
 		
 		button_question.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View arg0) {
 				Intent intent = new Intent(MenuActivity.this,
-						MainActivity.class);
+						DisplayQuestionActivity.class);
 				startActivity(intent);
 			}
 				
 
 		});
+		
+		button_question.setVisibility(View.INVISIBLE);
 		
 		button_map.setOnClickListener(new OnClickListener() {
 			
@@ -88,7 +98,7 @@ public class MenuActivity extends Activity{
 			}
 		});
 		
-		/*Session.openActiveSession(this, true, new Session.StatusCallback() {
+		Session.openActiveSession(this, true, new Session.StatusCallback() {
 
 		      // callback when session changes state
 		      @Override
@@ -102,14 +112,17 @@ public class MenuActivity extends Activity{
 		            @Override
 		            public void onCompleted(GraphUser user, Response response) {
 		              if (user != null) {
-		                text_welcome.setText("Hello " + user.getFirstName() + "!");
-		                //userid = Long.parseLong(user.getId());
-		               // sendIdentifyToServer(userid);
+		                text_welcome.setText("Üdv, " + user.getFirstName() + "!");
+		                long userid= Long.parseLong( user.getId() );	                
+		                SendIdentityUtil.sendIdentifyToServer(userid, getApplicationContext());
+		                SharedPreferences.Editor editor = preferences.edit();						
+						editor.putLong("faceID", userid); 
+						editor.commit();
 		              }
 		            }
 		          });
 		        }
 		      }
-		    });*/
+		    });
 	}
 }

@@ -35,6 +35,7 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.nfc.NdefMessage;
@@ -64,7 +65,7 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 
 	TextView textViewStatus;
-	// A változó amibe az ID-t olvassuk
+	// A változó amibe az ID-t olvassuk_
 	String read;
 
 	// flag, hogy ne fusson két hálózatos szál egyszerre
@@ -89,6 +90,9 @@ public class MainActivity extends Activity {
 	private static HttpClient httpclient = HttpClientSingleton.getInstance();
 	
 	private long userid;
+	
+	public static final String PREF_FILE_NAME = "PrefFile";
+	SharedPreferences preferences;
 
 	private static EditText StringToWrite;
 	IntentFilter[] mWriteTagFilters;
@@ -102,6 +106,7 @@ public class MainActivity extends Activity {
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 		StrictMode.setThreadPolicy(policy);
 		super.onCreate(savedInstanceState);
+		preferences = getSharedPreferences(PREF_FILE_NAME, MODE_PRIVATE);
 		setContentView(R.layout.activity_main);
 		textViewStatus = (TextView) findViewById(R.id.textView1);
 		ques = (TextView) findViewById(R.id.textView2);
@@ -121,10 +126,11 @@ public class MainActivity extends Activity {
 	            public void onCompleted(GraphUser user, Response response) {
 	              if (user != null) {
 	                textViewStatus.setText("Hello " + user.getFirstName() + "!");
-	                userid= Long.parseLong( user.getId() );
-	                // TODO remove
-	                userid = userid % 1000000;
-	                sendIdentifyToServer(userid);
+	                userid= Long.parseLong( user.getId() );	                
+	                SendIdentityUtil.sendIdentifyToServer(userid,getApplicationContext());
+	                SharedPreferences.Editor editor = preferences.edit();						
+					editor.putLong("faceID", userid); 
+					editor.commit();
 	              }
 	            }
 	          });
@@ -187,6 +193,16 @@ public class MainActivity extends Activity {
 						String a4 = answers.getString("Answer4");
 						String imageURL = c.getString("Image");
 
+						SharedPreferences.Editor editor = preferences.edit();						
+						editor.putString("actualDate", date); 
+						editor.putString("actualQuestion", question); 
+						editor.putString("actualAnswer1", a1); 
+						editor.putString("actualAnswer2", a2); 
+						editor.putString("actualAnswer3", a3); 
+						editor.putString("actualAnswer4", a4); 
+						editor.putString("actualImageUrl", imageURL); 
+						editor.commit();
+						
 						ques.setText(question);
 						answ1.setText(a1);
 						answ2.setText(a2);
@@ -311,7 +327,7 @@ public class MainActivity extends Activity {
 				StringEntity se = new StringEntity(json.toString());
 				se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
 				httppost.setEntity(se);
-				HttpResponse response = httpclient.execute(httppost);
+				HttpResponse response = HttpClientSingleton.getInstance().execute(httppost);
 				String s = EntityUtils.toString(response.getEntity());
 				Log.d("identify", s);
 				if (s.equals("User identification complete")) {
@@ -364,10 +380,13 @@ public class MainActivity extends Activity {
 		try {
 			res = new JSONObject(response);
 			String responseValid = res.getString("Response");
-			String question = res.getString("Position");
+			String pos = res.getString("Position");
 
 			if (responseValid.equals("true")) {
-				Toast.makeText(getApplicationContext(), "A válaszod helyes, a következõ pont poziciója: "+question, Toast.LENGTH_LONG).show();
+				SharedPreferences.Editor editor = preferences.edit();
+				editor.putString("actualPos", pos); 
+				editor.commit();
+				Toast.makeText(getApplicationContext(), "A válaszod helyes, a következõ pont poziciója: "+pos, Toast.LENGTH_LONG).show();
 			} else {
 				Toast.makeText(getApplicationContext(), "A válaszod rossz!", Toast.LENGTH_SHORT).show();
 			}

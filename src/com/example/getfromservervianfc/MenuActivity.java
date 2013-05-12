@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.view.View;
+import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
@@ -19,28 +20,29 @@ import com.facebook.model.GraphUser;
 public class MenuActivity extends Activity{
 
 	TextView text_welcome;
-	
+
 	public static final String PREF_FILE_NAME = "PrefFile";
 	SharedPreferences preferences;
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 		StrictMode.setThreadPolicy(policy);
 		super.onCreate(savedInstanceState);
+		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		preferences = getSharedPreferences(PREF_FILE_NAME, MODE_PRIVATE);
 		setContentView(R.layout.activity_menu);
 
 		text_welcome = (TextView) findViewById(R.id.welcomeText);
-		Button button_question = (Button) findViewById(R.id.button_question);
+		//Button button_question = (Button) findViewById(R.id.button_question);
 		Button button_map = (Button) findViewById(R.id.button_map);
 		Button button_score = (Button) findViewById(R.id.button_score);
 		Button button_toplist = (Button) findViewById(R.id.button_toplist);
 		Button button_exit = (Button) findViewById(R.id.button_exit);
 
 		text_welcome.setText("Facebook azonosítás folyamatban...");
-		
-		button_question.setOnClickListener(new OnClickListener() {
+
+		/*button_question.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View arg0) {
@@ -48,14 +50,14 @@ public class MenuActivity extends Activity{
 						DisplayQuestionActivity.class);
 				startActivity(intent);
 			}
-				
 
-		});
-		
-		button_question.setVisibility(View.INVISIBLE);
-		
+
+		})
+
+		button_question.setVisibility(View.INVISIBLE);*/
+
 		button_map.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				Intent intent = new Intent(MenuActivity.this,
@@ -63,7 +65,7 @@ public class MenuActivity extends Activity{
 				startActivity(intent);
 			}
 		});
-		
+
 		button_score.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -72,7 +74,7 @@ public class MenuActivity extends Activity{
 						MyScoreActivity.class);
 				startActivity(intent);
 			}
-				
+
 
 		});
 
@@ -84,45 +86,57 @@ public class MenuActivity extends Activity{
 						ToplistActivity.class);
 				startActivity(intent);
 			}
-				
+
 
 		});
-		
-		
-		
+
+
+
 		button_exit.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				finish();
 			}
 		});
-		
+
 		Session.openActiveSession(this, true, new Session.StatusCallback() {
 
-		      // callback when session changes state
-		      @Override
-		      public void call(Session session, SessionState state, Exception exception) {
-		        if (session.isOpened()) {
+			// callback when session changes state
+			@Override
+			public void call(Session session, SessionState state, Exception exception) {
+				if (session.isOpened()) {
 
-		          // make request to the /me API
-		          Request.executeMeRequestAsync(session, new Request.GraphUserCallback() {
+					// make request to the /me API
+					Request.executeMeRequestAsync(session, new Request.GraphUserCallback() {
 
-		            // callback after Graph API response with user object
-		            @Override
-		            public void onCompleted(GraphUser user, Response response) {
-		              if (user != null) {
-		                text_welcome.setText("Üdv, " + user.getFirstName() + "!");
-		                long userid= Long.parseLong( user.getId() );	                
-		                SendIdentityUtil.sendIdentifyToServer(userid, getApplicationContext());
-		                SharedPreferences.Editor editor = preferences.edit();						
-						editor.putLong("faceID", userid); 
-						editor.commit();
-		              }
-		            }
-		          });
-		        }
-		      }
-		    });
+						// callback after Graph API response with user object
+						@Override
+						public void onCompleted(GraphUser user, Response response) {
+							if (user != null) {
+								final GraphUser guser = user;
+								Thread t = new Thread() {
+									public void run() {
+								text_welcome.setText("Üdv, " + guser.getFirstName() + "!");
+								long userid= Long.parseLong( guser.getId() );	                
+								SendIdentityUtil.sendIdentifyToServer(userid, getApplicationContext());
+								SharedPreferences.Editor editor = preferences.edit();						
+								editor.putLong("faceID", userid); 
+								editor.commit();
+									}
+								};
+								t.run();
+							}
+						}
+					});
+				}
+			}
+		});
 	}
+	
+	@Override
+	  public void onActivityResult(int requestCode, int resultCode, Intent data) {
+	      super.onActivityResult(requestCode, resultCode, data);
+	      Session.getActiveSession().onActivityResult(this, requestCode, resultCode, data);
+	  }
 }

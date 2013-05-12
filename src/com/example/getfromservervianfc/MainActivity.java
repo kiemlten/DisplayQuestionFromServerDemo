@@ -6,10 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Random;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -18,7 +14,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
@@ -52,6 +47,7 @@ import android.os.Parcelable;
 import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -76,9 +72,7 @@ public class MainActivity extends Activity {
 
 	// NFC-hez kell
 	private Switch enableWrite;
-	private Button enableRead;
 	private static String questionID = "2";
-	private static boolean identified = false;
 
 	private TextView ques;
 	private Button answ1;
@@ -88,9 +82,9 @@ public class MainActivity extends Activity {
 	private ImageView im;
 
 	private static HttpClient httpclient = HttpClientSingleton.getInstance();
-	
+
 	private long userid;
-	
+
 	public static final String PREF_FILE_NAME = "PrefFile";
 	SharedPreferences preferences;
 
@@ -100,57 +94,58 @@ public class MainActivity extends Activity {
 	private PendingIntent mNfcPendingIntent;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		
-	
-		// remove these 2 lines if the image download doesnt run on the main thread
+
+
+		// remove these 2 lines if the image download doesnt run on the main thread_
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 		StrictMode.setThreadPolicy(policy);
 		super.onCreate(savedInstanceState);
+		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		preferences = getSharedPreferences(PREF_FILE_NAME, MODE_PRIVATE);
 		setContentView(R.layout.activity_main);
 		textViewStatus = (TextView) findViewById(R.id.textView1);
 		ques = (TextView) findViewById(R.id.textView2);
-		// start Facebook Login
-	    Session.openActiveSession(this, true, new Session.StatusCallback() {
-
-	      // callback when session changes state
-	      @Override
-	      public void call(Session session, SessionState state, Exception exception) {
-	        if (session.isOpened()) {
-
-	          // make request to the /me API
-	          Request.executeMeRequestAsync(session, new Request.GraphUserCallback() {
-
-	            // callback after Graph API response with user object
-	            @Override
-	            public void onCompleted(GraphUser user, Response response) {
-	              if (user != null) {
-	                textViewStatus.setText("Hello " + user.getFirstName() + "!");
-	                userid= Long.parseLong( user.getId() );	                
-	                SendIdentityUtil.sendIdentifyToServer(userid,getApplicationContext());
-	                SharedPreferences.Editor editor = preferences.edit();						
-					editor.putLong("faceID", userid); 
-					editor.commit();
-	              }
-	            }
-	          });
-	        }
-	      }
-	    });
-  	  
-		
-		
-		//	textViewStatus.setText("Oncreate");
-
-		
 		answ1 = (Button ) findViewById(R.id.button1);
 		answ2 = (Button ) findViewById(R.id.button2);
 		answ3 = (Button ) findViewById(R.id.button3);
 		answ4 = (Button ) findViewById(R.id.button4);
 		im = (ImageView) findViewById(R.id.imageView1);
-		
+
+		textViewStatus.setText("Facebook azonosítás folyamatban...");
+		setOnClickListeners();
+
 		setQuestionFormVisibility(View.INVISIBLE);
 
+		// start Facebook Login
+		Session.openActiveSession(this, true, new Session.StatusCallback() {
+
+			// callback when session changes state
+			@Override
+			public void call(Session session, SessionState state, Exception exception) {
+				if (session.isOpened()) {
+
+					// make request to the /me API
+					Request.executeMeRequestAsync(session, new Request.GraphUserCallback() {
+
+						// callback after Graph API response with user object
+						@Override
+						public void onCompleted(GraphUser user, Response response) {
+							if (user != null) {
+								textViewStatus.setText("Üdv, " + user.getFirstName() + ", íme a kérdés:");
+								userid= Long.parseLong( user.getId() );	                
+								SendIdentityUtil.sendIdentifyToServer(userid,getApplicationContext());
+								SharedPreferences.Editor editor = preferences.edit();						
+								editor.putLong("faceID", userid); 
+								editor.commit();
+								handler();
+
+							}
+						}
+					});
+				}
+			}
+		});
+		
 		// Handler, ami majd módosítani fogja a UI-t
 		handler = new Handler() {
 			@Override
@@ -202,12 +197,12 @@ public class MainActivity extends Activity {
 						editor.putString("actualAnswer4", a4); 
 						editor.putString("actualImageUrl", imageURL); 
 						editor.commit();
-						
+
 						ques.setText(question);
-						answ1.setText(a1);
-						answ2.setText(a2);
-						answ3.setText(a3);
-						answ4.setText(a4);
+						answ1.setText("\t"+a1+"\t");
+						answ2.setText("\t"+a2+"\t");
+						answ3.setText("\t"+a3+"\t");
+						answ4.setText("\t"+a4+"\t");
 
 						setQuestionFormVisibility(View.VISIBLE);
 
@@ -241,11 +236,9 @@ public class MainActivity extends Activity {
 
 		// NFC rész
 
-
-
-		enableWrite = (Switch) findViewById(R.id.switch1);
-		StringToWrite = (EditText) findViewById(R.id.editText1);
-		enableWrite.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+		//enableWrite = (Switch) findViewById(R.id.switch1);
+		//StringToWrite = (EditText) findViewById(R.id.editText1);
+		/*enableWrite.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton arg0, boolean arg1) {
 				if (arg1) {
@@ -255,10 +248,17 @@ public class MainActivity extends Activity {
 				}
 
 			}
-		});
+		});*/
 		mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 		mNfcPendingIntent = PendingIntent.getActivity(this, 0, new Intent(this,
 				getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+	}
+
+	public void handler() {
+
+	}
+
+	public void setOnClickListeners() {
 
 		answ1.setOnClickListener(new OnClickListener() {
 
@@ -293,12 +293,12 @@ public class MainActivity extends Activity {
 		});
 
 	}
-	
-	 @Override
-	  public void onActivityResult(int requestCode, int resultCode, Intent data) {
-	      super.onActivityResult(requestCode, resultCode, data);
-	      Session.getActiveSession().onActivityResult(this, requestCode, resultCode, data);
-	  }
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		Session.getActiveSession().onActivityResult(this, requestCode, resultCode, data);
+	}
 
 	public void setQuestionFormVisibility(int visibility) {
 		answ1.setVisibility(visibility);
@@ -307,48 +307,15 @@ public class MainActivity extends Activity {
 		answ4.setVisibility(visibility);
 		im.setVisibility(visibility);
 	}
+	
+	/*@Override
+	public void onBackPressed() {
+		Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
 
-	public void sendIdentifyToServer(long userid)  {
-		// ID
-		if (!identified) {
-			try {
-				HttpPost httppost = new HttpPost("http://nfconlab.azurewebsites.net/Home/Identify");
-					
-				// generates random int between 1 and 1000
-				//Random random = new Random();
-				//int userid = random.nextInt(1000-1+1)+1;
-				
-				JSONObject json = new JSONObject();
-				json.put("UserID", userid);
-
-				Date d = new Date();
-				json.put("Date", d);
-
-				StringEntity se = new StringEntity(json.toString());
-				se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-				httppost.setEntity(se);
-				HttpResponse response = HttpClientSingleton.getInstance().execute(httppost);
-				String s = EntityUtils.toString(response.getEntity());
-				Log.d("identify", s);
-				if (s.equals("User identification complete")) {
-					identified = true;
-					Toast.makeText(getApplicationContext(), "Sikeres felhasználói azonosítás, id: "+userid, Toast.LENGTH_LONG).show();
-				} else if (s.equals("New user added")) {
-					identified = true;
-					Toast.makeText(getApplicationContext(), "Új felhasználó létrehozva, id: "+userid, Toast.LENGTH_LONG).show();
-				} else {
-					Toast.makeText(getApplicationContext(), "Sikertelen felhasználói azonosítás", Toast.LENGTH_LONG).show();
-				}
-			} catch (ClientProtocolException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-				Toast.makeText(getApplicationContext(), "IOException", Toast.LENGTH_LONG).show();
-			} catch (JSONException e) {
-				e.printStackTrace();
-			} 
-		}
-	}
+        startActivity(intent);
+	}*/
 
 	public void answerQuestionToServer(CharSequence text) {
 		try {
@@ -364,7 +331,11 @@ public class MainActivity extends Activity {
 			String s = EntityUtils.toString(response.getEntity());
 			// Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
 			Log.d("httpresponse", "response: "+s);
-			handleQuestionResponseFromServer(s);
+			if (s.equals("Already answered question")) {
+				Toast.makeText(getApplicationContext(), "A kérdést már korábban megválaszoltad!", Toast.LENGTH_LONG).show();
+			} else {
+				handleQuestionResponseFromServer(s);
+			}
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -382,14 +353,20 @@ public class MainActivity extends Activity {
 			String responseValid = res.getString("Response");
 			String pos = res.getString("Position");
 
-			if (responseValid.equals("true")) {
-				SharedPreferences.Editor editor = preferences.edit();
-				editor.putString("actualPos", pos); 
-				editor.commit();
-				Toast.makeText(getApplicationContext(), "A válaszod helyes, a következõ pont poziciója: "+pos, Toast.LENGTH_LONG).show();
+			SharedPreferences.Editor editor = preferences.edit();
+			editor.putString("actualPos", pos); 
+			editor.commit();
+			
+			if (responseValid.equals("true")) {			
+				Toast.makeText(getApplicationContext(), "A válaszod helyes, a térképen megtalálod a következõ célpontot! ", Toast.LENGTH_LONG).show();
 			} else {
-				Toast.makeText(getApplicationContext(), "A válaszod rossz!", Toast.LENGTH_SHORT).show();
+				Toast.makeText(getApplicationContext(), "Sajnos a válaszod rossz, de a következõ célpontnál ismét próbálkozhatsz!", Toast.LENGTH_LONG).show();
 			}
+			
+			Intent intent = new Intent(MainActivity.this,
+					MapActivity.class);
+			startActivity(intent);
+			
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -434,14 +411,11 @@ public class MainActivity extends Activity {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(aIS));
 		StringBuilder sb = new StringBuilder();
 		String line = null;
-		String tmp = new String();
 		try {
 			// kiolvassa sorrol sorra
 			while ((line = reader.readLine()) != null) {
 				sb.append(line + "\n");
 			}
-			// Beállítja az üzenetet a handler számára
-			tmp=sb.toString();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -526,7 +500,6 @@ public class MainActivity extends Activity {
 			msg.setData(b);
 			// elküldi az üzenetet, majd a handler módosítja a UI-t
 			handler.sendMessage(msg);
-			String ssss = new String(sb.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -588,15 +561,6 @@ public class MainActivity extends Activity {
 			msgs = new NdefMessage[rawMsgs.length];
 			for (int i = 0; i < rawMsgs.length; i++) {
 				msgs[i] = (NdefMessage) rawMsgs[i];
-			}
-		}
-
-		if (msgs != null) {
-			for (NdefMessage tmpMsg : msgs) {
-				for (NdefRecord tmpRecord : tmpMsg.getRecords()) {
-					////textViewStatus.append("\n"+new String(tmpRecord.getPayload()));
-					//questionID=textViewStatus.getText().toString();
-				}
 			}
 		}
 	}

@@ -12,12 +12,10 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class MyScoreActivity extends Activity {
 	
@@ -30,8 +28,6 @@ public class MyScoreActivity extends Activity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-    	StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-		StrictMode.setThreadPolicy(policy);
         super.onCreate(savedInstanceState);
         preferences = getSharedPreferences(PREF_FILE_NAME, MODE_PRIVATE);
         setContentView(R.layout.activity_my_score);
@@ -50,8 +46,14 @@ public class MyScoreActivity extends Activity {
 		}			
 		});
 		
-		Long a = preferences.getLong("faceID", 0);
-        SendIdentityUtil.sendIdentifyToServer(a, this);
+		Thread tid = new Thread() {
+			public void run() {
+				Long a = preferences.getLong("faceID", 0);
+		        SendIdentityUtil.sendIdentifyToServer(a, getApplicationContext());
+			}
+		};
+		tid.run();
+		
 		Thread t = new Thread() {
 			public void run() {
 				HttpPost httppost = new HttpPost("http://nfconlab.azurewebsites.net/Home/GetMyPoints");
@@ -64,7 +66,6 @@ public class MyScoreActivity extends Activity {
 					JSONObject res;
 					try {
 						res = new JSONObject(s);
-						// TODO fix this lol
 						final String point = res.getString("Points");
 						final String pos = res.getString("Position");
 

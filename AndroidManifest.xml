@@ -28,11 +28,15 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@drawable/nfc"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@android:style/Theme.Black">
+        <!-- android:theme="@style/AppTheme" -->
+       
         <activity
             android:name=".MainActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:screenOrientation="portrait"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.nfc.action.NDEF_DISCOVERED" />
@@ -58,6 +62,8 @@
 
         <activity
             android:name=".MenuActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:screenOrientation="portrait"
             android:label="@string/title_activity_menu" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -67,25 +73,28 @@
         </activity>
         <activity
             android:name=".MapActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:screenOrientation="portrait"
             android:label="@string/title_activity_map" >
         </activity>
         <activity
             android:name=".MyScoreActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:screenOrientation="portrait"
             android:label="@string/title_activity_my_score"
             android:theme="@android:style/Theme.Dialog" >
         </activity>
         <activity
             android:name=".ToplistActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:screenOrientation="portrait"
             android:label="@string/title_activity_toplist" >
         </activity>
         <activity
             android:name=".DisplayQuestionActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:screenOrientation="portrait"
             android:label="@string/title_activity_display_question" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
     </application>
 

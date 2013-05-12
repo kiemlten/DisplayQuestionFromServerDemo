@@ -6,20 +6,31 @@
               android:gravity="center_vertical"
               android:orientation="vertical" >
 	
+    <ImageView
+        android:id="@+id/imageView1"
+        android:contentDescription="@string/NFCicon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:layout_gravity=""
+        android:src="@drawable/nfc_modd" />
+    
     	<TextView
         android:id="@+id/welcomeText"
+        android:textAppearance="@style/TextsMenuWelcome"
+        android:layout_margin="20dp"
         android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
     
-   	   <Button android:id="@+id/button_question"
+   	   <!--Button android:id="@+id/button_question"
             android:layout_width="match_parent"
             android:layout_margin="20dp"
             android:background="@drawable/menu_bg_new"
             android:layout_gravity="center"
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextsMenu"
-            android:text="@string/question" />
+            android:text="@string/question" /-->
    	   <Button android:id="@+id/button_map"
             android:layout_width="match_parent"
             android:layout_margin="20dp"

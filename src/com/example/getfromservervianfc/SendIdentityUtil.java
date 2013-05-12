@@ -43,9 +43,9 @@ public class SendIdentityUtil {
 				String s = EntityUtils.toString(response.getEntity());
 				Log.d("identify", s);
 				if (s.equals("User identification complete")) {
-					Toast.makeText(c.getApplicationContext(), "Sikeres felhasználói azonosítás, id: "+userid, Toast.LENGTH_LONG).show();
+					//Toast.makeText(c.getApplicationContext(), "Sikeres felhasználói azonosítás, id: "+userid, Toast.LENGTH_LONG).show();
 				} else if (s.equals("New user added")) {
-					Toast.makeText(c.getApplicationContext(), "Új felhasználó létrehozva, id: "+userid, Toast.LENGTH_LONG).show();
+					//Toast.makeText(c.getApplicationContext(), "Új felhasználó létrehozva, id: "+userid, Toast.LENGTH_LONG).show();
 				} else {
 					Toast.makeText(c.getApplicationContext(), "Sikertelen felhasználói azonosítás", Toast.LENGTH_LONG).show();
 				}

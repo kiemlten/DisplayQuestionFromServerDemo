@@ -7,6 +7,31 @@
    		 <item name="android:textColor">#FFFFFF</item>
 	</style>
 	
+    <style name="TextsMenuWelcome">
+   		 <item name="android:textSize">25sp</item>
+   		 <item name="android:textColor">#000000</item>
+	</style>
+	
+    <style name="TextQuestionWelcome">
+   		 <item name="android:textSize">20sp</item>
+   		 <item name="android:textColor">#000000</item>
+	</style>
+	
+    <style name="TextQuestion">
+   		 <item name="android:textSize">23sp</item>
+   		 <item name="android:textColor">#000000</item>
+	</style>
+	
+    <style name="TextsAnswers">
+   		 <item name="android:textSize">17sp</item>
+   		 <item name="android:textColor">#000000</item>
+	</style>
+	
+    <style name="TextsMyScore">
+   		 <item name="android:textSize">13sp</item>
+   		 <item name="android:textColor">#000000</item>
+	</style>
+	
     <style name="TextsInGame">
    		 <item name="android:textSize">18sp</item>
    		 <item name="android:textColor">#A66A26</item>

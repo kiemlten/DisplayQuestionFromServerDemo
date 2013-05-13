@@ -335,10 +335,11 @@ containing a value of this type.
         public static final int menu_bg=0x7f020022;
         public static final int menu_bg_new=0x7f020023;
         public static final int nfc=0x7f020024;
-        public static final int nfc_mod=0x7f020025;
-        public static final int nfc_modd=0x7f020026;
-        public static final int target=0x7f020027;
-        public static final int toplist=0x7f020028;
+        public static final int nfc_drawer=0x7f020025;
+        public static final int nfc_mod=0x7f020026;
+        public static final int nfc_modd=0x7f020027;
+        public static final int target=0x7f020028;
+        public static final int toplist=0x7f020029;
     }
     public static final class id {
         public static final int ATextView=0x7f040009;

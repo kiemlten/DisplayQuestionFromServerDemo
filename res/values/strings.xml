@@ -12,7 +12,7 @@
     <string name="map">Térkép</string>
     <string name="score">Pontszám</string>
     <string name="toplist">Toplista</string>
-    <string name="title_activity_menu">MainActivity</string>
+    <string name="title_activity_menu">NFC Önlab</string>
     <string name="menu_settings">Settings</string>
     <string name="title_activity_map">MapActivity</string>
     <string name="title_activity_my_score">Pontszámom</string>

@@ -20,12 +20,6 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.facebook.Request;
-import com.facebook.Response;
-import com.facebook.Session;
-import com.facebook.SessionState;
-import com.facebook.model.GraphUser;
-
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -47,16 +41,20 @@ import android.os.Parcelable;
 import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.facebook.Request;
+import com.facebook.Response;
+import com.facebook.Session;
+import com.facebook.SessionState;
+import com.facebook.model.GraphUser;
 
 public class MainActivity extends Activity {
 
@@ -137,8 +135,6 @@ public class MainActivity extends Activity {
 								SharedPreferences.Editor editor = preferences.edit();						
 								editor.putLong("faceID", userid); 
 								editor.commit();
-								handler();
-
 							}
 						}
 					});
@@ -199,10 +195,10 @@ public class MainActivity extends Activity {
 						editor.commit();
 
 						ques.setText(question);
-						answ1.setText("\t"+a1+"\t");
-						answ2.setText("\t"+a2+"\t");
-						answ3.setText("\t"+a3+"\t");
-						answ4.setText("\t"+a4+"\t");
+						answ1.setText("   "+a1+"   ");
+						answ2.setText("   "+a2+"   ");
+						answ3.setText("   "+a3+"   ");
+						answ4.setText("   "+a4+"   ");
 
 						setQuestionFormVisibility(View.VISIBLE);
 
@@ -220,7 +216,7 @@ public class MainActivity extends Activity {
 
 						//textViewStatus.setText(a3);
 					} catch (JSONException e) {
-						ques.setText("Invalid question ID!");
+						ques.setText("Sikertelen beolvasás, kérlek próbáld meg újra!");
 						setQuestionFormVisibility(View.INVISIBLE);
 						e.printStackTrace();
 					} 
@@ -254,9 +250,6 @@ public class MainActivity extends Activity {
 				getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
 	}
 
-	public void handler() {
-
-	}
 
 	public void setOnClickListeners() {
 
@@ -264,7 +257,11 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void onClick(View arg0) {
-				answerQuestionToServer(answ1.getText());
+				String answ = (String) answ1.getText();
+				String tansw = answ.trim();
+				Log.d("nfcdebug", tansw);
+				answerQuestionToServer(tansw);
+				
 			}
 		});
 
@@ -272,7 +269,10 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void onClick(View arg0) {
-				answerQuestionToServer(answ2.getText());
+				String answ = (String) answ2.getText();
+				String tansw = answ.trim();
+				Log.d("nfcdebug", tansw);
+				answerQuestionToServer(tansw);
 			}
 		});
 
@@ -280,7 +280,10 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void onClick(View arg0) {
-				answerQuestionToServer(answ3.getText());
+				String answ = (String) answ3.getText();
+				String tansw = answ.trim();
+				Log.d("nfcdebug", tansw);
+				answerQuestionToServer(tansw);
 			}
 		});
 
@@ -288,7 +291,10 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void onClick(View arg0) {
-				answerQuestionToServer(answ4.getText());
+				String answ = (String) answ4.getText();
+				String tansw = answ.trim();
+				Log.d("nfcdebug", tansw);
+				answerQuestionToServer(tansw);
 			}
 		});
 
@@ -329,7 +335,6 @@ public class MainActivity extends Activity {
 			httppost.setEntity(se);
 			HttpResponse response = httpclient.execute(httppost);
 			String s = EntityUtils.toString(response.getEntity());
-			// Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
 			Log.d("httpresponse", "response: "+s);
 			if (s.equals("Already answered question")) {
 				Toast.makeText(getApplicationContext(), "A kérdést már korábban megválaszoltad!", Toast.LENGTH_LONG).show();
@@ -595,6 +600,7 @@ public class MainActivity extends Activity {
 		System.arraycopy(textBytes, 0, data, 1, textBytes.length);
 		NdefRecord record = new NdefRecord(NdefRecord.TNF_WELL_KNOWN,
 				NdefRecord.RTD_TEXT, new byte[0], data);
+		//record.createApplicationRecord("com.aide.ui");
 		return record;
 	}
 
